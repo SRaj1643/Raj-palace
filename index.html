@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Raj Palace | Royal In-Room Dining</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    
+    <style>
+        :root {
+            --gold: #FFD700;
+            --dark: #0f0f10;
+            --glass: rgba(255, 255, 255, 0.05);
+            --border: rgba(255, 255, 255, 0.1);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background-color: var(--dark);
+            color: white;
+            font-family: 'Inter', sans-serif;
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* LEFT: MENU SECTION */
+        #menu-container {
+            width: 65%;
+            padding: 50px;
+            overflow-y: auto;
+            border-right: 1px solid var(--border);
+        }
+
+        header h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: 3.5rem;
+            color: var(--gold);
+            margin-bottom: 10px;
+        }
+
+        header p { color: #888; margin-bottom: 40px; letter-spacing: 2px; text-transform: uppercase; font-size: 0.8rem; }
+
+        .category-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.8rem;
+            margin: 30px 0 20px 0;
+            border-bottom: 1px solid var(--gold);
+            display: inline-block;
+        }
+
+        .item-card {
+            background: var(--glass);
+            border: 1px solid var(--border);
+            padding: 25px;
+            border-radius: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .item-card:hover { border-color: var(--gold); transform: translateY(-3px); }
+
+        .details h3 { font-size: 1.4rem; margin-bottom: 5px; }
+        .rating { color: var(--gold); font-size: 0.9rem; margin-bottom: 8px; }
+        .description { color: #aaa; font-size: 0.9rem; margin-bottom: 15px; max-width: 400px; line-height: 1.4; }
+
+        .pricing { display: flex; align-items: center; gap: 15px; }
+        .current-price { color: var(--gold); font-weight: bold; font-size: 1.3rem; }
+        .compare-price { color: #555; text-decoration: line-through; font-size: 0.9rem; }
+
+        .btn-add {
+            background: var(--gold);
+            color: black;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .btn-add:active { transform: scale(0.95); }
+
+        /* RIGHT: LIVE LEDGER CALCULATOR */
+        #ledger {
+            width: 35%;
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(20px);
+            padding: 50px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        #ledger h2 { font-family: 'Playfair Display', serif; margin-bottom: 30px; font-size: 2rem; border-bottom: 1px solid var(--border); padding-bottom: 15px; }
+
+        #cart-list { flex-grow: 1; overflow-y: auto; margin-bottom: 20px; }
+        .cart-item { display: flex; justify-content: space-between; margin-bottom: 15px; font-size: 0.95rem; color: #ccc; }
+
+        .summary { border-top: 1px solid var(--border); padding-top: 20px; }
+        .row { display: flex; justify-content: space-between; margin-bottom: 10px; color: #888; }
+        .row.total { color: var(--gold); font-size: 1.6rem; font-weight: bold; margin-top: 15px; }
+
+        .btn-checkout {
+            width: 100%;
+            background: linear-gradient(45deg, #FFD700, #DAA520);
+            border: none;
+            padding: 20px;
+            border-radius: 15px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            margin-top: 30px;
+            cursor: pointer;
+            box-shadow: 0 10px 20px rgba(255, 215, 0, 0.2);
+        }
+
+        /* PAYMENT MODAL */
+        #payment-modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.95);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background: var(--glass);
+            padding: 50px;
+            border-radius: 30px;
+            border: 1px solid var(--gold);
+            text-align: center;
+            backdrop-filter: blur(20px);
+        }
+
+        #qrcode canvas { margin: 20px auto; border: 10px solid white; border-radius: 10px; }
+
+        .btn-close { background: none; border: 1px solid #444; color: white; padding: 10px 20px; margin-top: 30px; cursor: pointer; border-radius: 8px; }
+    </style>
+</head>
+<body>
+
+    <div id="menu-container">
+        <header>
+            <h1>Raj Palace</h1>
+            <p>Experience Royal Indian Grandeur</p>
+        </header>
+
+        <div class="category-title">Shahi Royal Cuisine</div>
+        
+        <div class="item-card">
+            <div class="details">
+                <div class="rating">4.9 ★ (2k+ Ratings)</div>
+                <h3>Laal Maas</h3>
+                <p class="description">Fiery Mathania chillies meet tender mutton in this Rajput hunt-style curry. A bold masterpiece of spice.</p>
+                <div class="pricing">
+                    <span class="current-price">₹850</span>
+                    <span class="compare-price">₹1,200 (Other Hotels)</span>
+                </div>
+            </div>
+            <button class="btn-add" onclick="addItem('Laal Maas', 850)">+ Add</button>
+        </div>
+
+        <div class="item-card">
+            <div class="details">
+                <div class="rating">4.8 ★ (1.5k+ Ratings)</div>
+                <h3>Paneer Noor Jahan</h3>
+                <p class="description">Paneer pearls simmered in a velvet cashew & saffron gravy, fit for an Empress.</p>
+                <div class="pricing">
+                    <span class="current-price">₹650</span>
+                    <span class="compare-price">₹950 (Other Hotels)</span>
+                </div>
+            </div>
+            <button class="btn-add" onclick="addItem('Paneer Noor Jahan', 650)">+ Add</button>
+        </div>
+
+        <div class="category-title">South Indian Gold</div>
+
+        <div class="item-card">
+            <div class="details">
+                <div class="rating">4.7 ★ (3k+ Ratings)</div>
+                <h3>Ghee Podi Roast</h3>
+                <p class="description">A golden, paper-thin crepe dusted with spicy gunpowder and drenched in organic ghee.</p>
+                <div class="pricing">
+                    <span class="current-price">₹320</span>
+                    <span class="compare-price">₹450 (Other Hotels)</span>
+                </div>
+            </div>
+            <button class="btn-add" onclick="addItem('Ghee Podi Roast', 320)">+ Add</button>
+        </div>
+    </div>
+
+    <div id="ledger">
+        <h2>Live Ledger</h2>
+        <div id="cart-list">
+            </div>
+
+        <div class="summary">
+            <div class="row">
+                <span>Subtotal</span>
+                <span id="subtotal">₹0</span>
+            </div>
+            <div class="row">
+                <span>GST (5%)</span>
+                <span id="tax">₹0</span>
+            </div>
+            <div class="row total">
+                <span>Grand Total</span>
+                <span id="grand-total">₹0</span>
+            </div>
+            <button class="btn-checkout" onclick="openPayment()">Confirm & Pay via UPI</button>
+        </div>
+    </div>
+
+    <div id="payment-modal">
+        <div class="modal-content">
+            <h2 style="font-family: serif; color: var(--gold);">Raj Palace Check-out</h2>
+            <p style="margin-bottom: 20px; color: #aaa;">Scan this QR to pay securely</p>
+            <div id="qrcode"></div>
+            <h3 id="modal-amt" style="margin-top: 20px; font-size: 1.5rem;"></h3>
+            <button class="btn-close" onclick="closePayment()">Cancel Transaction</button>
+        </div>
+    </div>
+
+    <script>
+        let cart = [];
+        let subtotal = 0;
+
+        function addItem(name, price) {
+            cart.push({name, price});
+            updateUI();
+        }
+
+        function updateUI() {
+            const list = document.getElementById('cart-list');
+            list.innerHTML = "";
+            subtotal = 0;
+
+            cart.forEach((item, index) => {
+                subtotal += item.price;
+                const div = document.createElement('div');
+                div.className = "cart-item";
+                div.innerHTML = `<span>${item.name}</span><span>₹${item.price}</span>`;
+                list.appendChild(div);
+            });
+
+            const tax = subtotal * 0.05;
+            const final = subtotal + tax;
+
+            document.getElementById('subtotal').innerText = `₹${subtotal}`;
+            document.getElementById('tax').innerText = `₹${tax.toFixed(2)}`;
+            document.getElementById('grand-total').innerText = `₹${final.toFixed(2)}`;
+        }
+
+        function openPayment() {
+            const total = document.getElementById('grand-total').innerText.replace('₹', '');
+            if(total == "0") return alert("Add items to your tray first!");
+
+            document.getElementById('payment-modal').style.display = 'flex';
+            document.getElementById('modal-amt').innerText = `Amount: ₹${total}`;
+
+            // Generate UPI QR Code
+            const upiID = "rajpalace@upi"; // Set your actual UPI ID here
+            const upiUrl = `upi://pay?pa=${upiID}&pn=RajPalace&am=${total}&cu=INR`;
+
+            document.getElementById("qrcode").innerHTML = "";
+            new QRCode(document.getElementById("qrcode"), {
+                text: upiUrl,
+                width: 200,
+                height: 200,
+                colorDark : "#000000",
+                colorLight : "#ffffff"
+            });
+        }
+
+        function closePayment() {
+            document.getElementById('payment-modal').style.display = 'none';
+        }
+    </script>
+</body>
+</html>
